@@ -47,9 +47,9 @@ void MainTask(void *p_arg)
 		OSTaskCreate(TSK_WriteFile, (void *)0, &TSK_WriteFile_Stk[TSK_WriteFile_StkSize - 1], TSK_WriteFile_Prio);
 		OSTaskCreate(TSK_ReadFile, (void *)0, &TSK_ReadFile_Stk[TSK_ReadFile_StkSize - 1], TSK_ReadFile_Prio);
 
-		OSTimeDlyHMSM(0, 0, 1, 0); /* 任务调度*/
+//		OSTimeDlyHMSM(0, 0, 1, 0); /* 任务调度*/
 		OSTaskSuspend(MainTask_Prio);  //挂起主任务
-		//		OSTaskDel(MainTask_Prio); /* 删除主任务*/
+//      OSTaskDel(MainTask_Prio); /* 删除主任务*/
 	}
 }
 

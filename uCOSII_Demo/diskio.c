@@ -38,13 +38,15 @@ DSTATUS disk_initialize(
 	DSTATUS DiskStatus;  //初始话磁盘状态为未初始化
 
     // TODO: Add your control notification handler code here  
-    hDevice = CreateFile("\\\\.\\I:",   
+	hDevice = CreateFile(L"\\\\.\\G:",
                         GENERIC_READ|GENERIC_WRITE,           //对资源的读写操作权限
                         FILE_SHARE_READ | FILE_SHARE_WRITE,   //共享模式
                         NULL, OPEN_EXISTING, 0, NULL  
                     );   
     if (hDevice == INVALID_HANDLE_VALUE)   
     {  
+		printf("%d\n", GetLastError());
+
         DiskStatus = STA_NOINIT;  
         return DiskStatus;  
     }  

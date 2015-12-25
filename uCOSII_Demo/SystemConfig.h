@@ -16,7 +16,7 @@
 
 
 #define TSK_WriteFile_Prio    10
-#define TSK_ReadFile_Prio     11
+#define TSK_ReadFile_Prio     12
 
 /*
 *********************************************************************************************************
