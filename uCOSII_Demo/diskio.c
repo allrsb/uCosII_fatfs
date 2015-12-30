@@ -154,7 +154,21 @@ DRESULT disk_ioctl (
     return RES_OK;  
 }  
   
+
+//修改文件时间
 DWORD get_fattime (void)  
 {  
-  return 0;  
+	SYSTEMTIME tm;
+
+	/* Get local time */
+	GetLocalTime(&tm);
+
+	/* Pack date and time into a DWORD variable */
+	return 	  ((DWORD)(tm.wYear - 1980) << 25)
+		| ((DWORD)tm.wMonth << 21)
+		| ((DWORD)tm.wDay << 16)
+		| (WORD)(tm.wHour << 11)
+		| (WORD)(tm.wMinute << 5)
+		| (WORD)(tm.wSecond >> 1);
+
 }  

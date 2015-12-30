@@ -86,6 +86,7 @@
     <ClCompile Include="diskio.c" />
     <ClCompile Include="ff.c" />
     <ClCompile Include="main.c" />
+    <ClCompile Include="writeAndReadCmd.c" />
     <ClCompile Include="option\syscall.c" />
     <ClCompile Include="option\unicode.c" />
     <ClCompile Include="readFile.c" />
@@ -97,12 +98,15 @@
     <ClInclude Include="..\uCOS-II\Ports\WIN32\os_trace.h" />
     <ClInclude Include="..\uCOS-II\Source\os_cfg_r.h" />
     <ClInclude Include="..\uCOS-II\Source\ucos_ii.h" />
+    <ClInclude Include="debug.h" />
     <ClInclude Include="diskio.h" />
     <ClInclude Include="ff.h" />
     <ClInclude Include="ffconf.h" />
+    <ClInclude Include="global.h" />
     <ClInclude Include="integer.h" />
     <ClInclude Include="readFile.h" />
     <ClInclude Include="SystemConfig.h" />
+    <ClInclude Include="writeAndReadCmd.h" />
     <ClInclude Include="writeFile.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

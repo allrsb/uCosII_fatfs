@@ -57,6 +57,9 @@
     <ClCompile Include="readFile.c">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="writeAndReadCmd.c">
+      <Filter>源文件</Filter>
+    </ClCompile>
     <ClCompile Include="writeFile.c">
       <Filter>源文件</Filter>
     </ClCompile>
@@ -96,6 +99,15 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="writeFile.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="writeAndReadCmd.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="global.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="debug.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>

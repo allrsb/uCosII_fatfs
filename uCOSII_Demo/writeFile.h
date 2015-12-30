@@ -20,4 +20,7 @@ typedef struct tag_LocalTim
 	int week;
 }LocalTim;
 
+
+
+
 #endif

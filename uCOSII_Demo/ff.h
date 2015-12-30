@@ -56,14 +56,14 @@ extern PARTITION VolToPart[];	/* Volume - Partition resolution table */
 #if !_USE_LFN
 #error _LFN_UNICODE must be 0 at non-LFN cfg.
 #endif
-#ifndef _INC_TCHAR
+#ifndef _INC_TCHAR  //tango add 151228
 typedef WCHAR TCHAR;
 #define _T(x) L ## x
 #define _TEXT(x) L ## x
 #endif
 
 #else						/* ANSI/OEM string */
-#ifndef _INC_TCHAR
+#ifndef _INC_TCHAR   //tango add 151228
 typedef char TCHAR;
 #define _T(x) x
 #define _TEXT(x) x
@@ -267,7 +267,7 @@ DWORD get_fattime (void);
 /* Unicode support functions */
 #if _USE_LFN							/* Unicode - OEM code conversion */
 WCHAR ff_convert (WCHAR chr, UINT dir);	/* OEM-Unicode bidirectional conversion */
-WCHAR ff_wtoupper(WCHAR chr);			/* Unicode upper-case conversion */
+WCHAR ff_wtoupper (WCHAR chr);			/* Unicode upper-case conversion */
 #if _USE_LFN == 3						/* Memory functions */
 void* ff_memalloc (UINT msize);			/* Allocate memory block */
 void ff_memfree (void* mblock);			/* Free memory block */
