@@ -1,3 +1,5 @@
+//该.c文件暂时未用，做一些测试。
+
 #include "SystemConfig.h"
 #include <stdio.h>
 #include <string.h>

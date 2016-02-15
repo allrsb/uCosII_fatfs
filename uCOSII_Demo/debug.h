@@ -4,7 +4,8 @@
 #include <stdio.h>
 #include <stdarg.h>
 
-#define DEBUG_ALL  1
+#define DEBUG_ALL    1
+#define DEBUG_ASSERT 1
 
 #define DBG_LEVEL_ALL          0x00
 #define DBG_ERROR              0x04      //´òÓ¡¼¶±ð
@@ -23,18 +24,39 @@
 
 #if DEBUG_ALL
 
-#define Debug(level, format, args) \
+#define DBG_print(level, format, ...) \
 do{\
 	if ((level & DBG_LEVEL_MASK) >= DBG_MIN_LEVEL)\
 	{\
 		printf("%s, [%s, %d]:  ", #level, __FUNCTION__, __LINE__);\
-		printf(format, ##args);\
+		printf(format, ##__VA_ARGS__); \
 		printf("\n");\
 	}\
 } while (0);
 #else
 #define Debug(level, fmt, args)
 #endif
+
+
+
+/*¶ÏÑÔ*/
+#if DEBUG_ASSERT
+
+#define DBG_assert(assertion, format, args)\
+do{\
+	if (!(assertion))\
+	{\
+		printf("ASSERT, [%s, %d]:  ",  __FUNCTION__, __LINE__); \
+		printf(format, ##args); \
+		printf("\n"); \
+		while (1);\
+	}\
+} while (0)
+#else
+#define DBG_assert(assertion, format, args) 
+
+#endif
+
 
 #endif
 

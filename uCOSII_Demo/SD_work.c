@@ -5,6 +5,7 @@
 #include "writeFile.h"
 #include "writeAndReadCmd.h"
 #include "global.h"
+#include "debug.h"
 
 #define DEBUG
 
@@ -15,8 +16,9 @@
 #define TXT_UNLOAD_PATH  "TXT/UNLOAD"
 #define TXT_LOADED_PATH  "TXT/LOADED"
 
-static void WriteInit(void);
-static int GetLocalTim(LocalTim *);
+static int SD_SystemInit(void);
+static int SD_DirInit(void);
+static int GetLocalDataTime(LocalTim *);
 int FindVaildFile(char *dirPath, char * matchFile, char *dstName);
 
 FATFS fs;            // Work area (file system object) for logical drive
@@ -30,7 +32,7 @@ char wTxtLoadedDirPath[32] = { 0 };
 WriteBuffer gWritebuf;
 
 
-void TSK_WriteFile()
+void TSK_SDWork()
 {
 	FRESULT res;
 	unsigned char err;
@@ -40,43 +42,43 @@ void TSK_WriteFile()
 	char * pCmd;
 	char rdName[13] = { 0 };
 
-	WriteInit();
+	SD_SystemInit();
 
 	while (1)
 	{
 		pCmd = OSQPend(Q_Msg, 0, &err);
-		printf("que cmd = %d\n", *pCmd);
+		DBG_print(DBG_INFO, "que cmd = %d", *pCmd);
 
 		while (1)
 		{
 			switch (*pCmd)
 			{
 			case WRITE_CMD:
-				GetLocalTim(&dataTime);
+				GetLocalDataTime(&dataTime);
 				/*write fsn file*/
 				sprintf(wFsnUnloadDirPath, "FSN/UNLOAD/%04d%02d%02d", dataTime.year, dataTime.mon, dataTime.day);
 				sprintf(wFsnLoadedDirPath, "FSN/LOADED/%04d%02d%02d", dataTime.year, dataTime.mon, dataTime.day);
 				res = f_mkdir(wFsnUnloadDirPath);
 				if (res != FR_OK && res != FR_EXIST)
 				{
-					printf("mkdir %s err, %d\n", wFsnUnloadDirPath, res);
+					DBG_print(DBG_ERROR, "mkdir %s err, %d", wFsnUnloadDirPath, res);
 				}
 				res = f_mkdir(wFsnLoadedDirPath);
 				if (res != FR_OK && res != FR_EXIST)
 				{
-					printf("mkdir %s err, %d\n", wFsnLoadedDirPath, res);
+					DBG_print(DBG_ERROR, "mkdir %s err, %d", wFsnLoadedDirPath, res);
 				}
 				sprintf(wFilePath, "%s/%02d%02d%02d.fsn", wFsnUnloadDirPath, dataTime.hour, dataTime.tmin, dataTime.sec);
 				res = f_open(&fdst, wFilePath, FA_CREATE_ALWAYS | FA_WRITE);
 				if (res != FR_OK)
 				{
-					printf("creat file err, %d\n", res);
+					DBG_print(DBG_ERROR, "creat file err, %d", res);
 				}
 
 				res = f_write(&fdst, gWritebuf.wbuf, gWritebuf.length, &bw);
 				if (res != FR_OK || bw != gWritebuf.length)
 				{
-					printf("write file err, %d, %d", res, bw);
+					DBG_print(DBG_ERROR, "write file err, %d, %d", res, bw);
 				}
 				f_close(&fdst);
 
@@ -87,34 +89,34 @@ void TSK_WriteFile()
 				res = f_mkdir(wTxtUnloadDirPath);
 				if (res != FR_OK && res != FR_EXIST)
 				{
-					printf("mkdir %s err, %d\n", wTxtUnloadDirPath, res);
+					DBG_print(DBG_ERROR, "mkdir %s err, %d", wTxtUnloadDirPath, res);
 				}
 				res = f_mkdir(wTxtLoadedDirPath);
 				if (res != FR_OK && res != FR_EXIST)
 				{
-					printf("mkdir %s err, %d\n", wTxtLoadedDirPath, res);
+					DBG_print(DBG_ERROR, "mkdir %s err, %d", wTxtLoadedDirPath, res);
 				}
 
 				sprintf(wFilePath, "%s/%02d%02d%02d.txt", wTxtUnloadDirPath, dataTime.hour, dataTime.tmin, dataTime.sec);
 				res = f_open(&fdst, wFilePath, FA_CREATE_ALWAYS | FA_WRITE);
 				if (res != FR_OK)
 				{
-					printf("creat file err, %d\n", res);
+					DBG_print(DBG_ERROR, "creat file err, %d", res);
 				}
 
 				res = f_write(&fdst, gWritebuf.wbuf, gWritebuf.length, &bw);
 				if (res != FR_OK || bw != gWritebuf.length)
 				{
-					printf("write file err, %d, %d", res, bw);
+					DBG_print(DBG_ERROR, "write file err, %d, %d", res, bw);
 				}
 				f_close(&fdst);
 
-				printf("creat & write file %s, \n", wFilePath);
+				DBG_print(DBG_INFO, "creat & write file %s", wFilePath);
 				break;
 			case READ_CMD:
 				if (0 == wFsnUnloadDirPath[0])
 				{
-					printf("unload path is null\n");
+					DBG_print(DBG_ERROR, "unload path is null");
 					break;
 				}
 
@@ -123,7 +125,7 @@ void TSK_WriteFile()
 //				res = f_open(&fd, "FSN\\UNLOAD\\154623.FSN", FA_READ | FA_OPEN_EXISTING);
 				if (res != FR_OK)
 				{
-					printf("open file err, %d\n", res);
+					DBG_print(DBG_ERROR, "open file err, %d", res);
 				}
 				//				FindVaildFile(wFsnUnloadDirPath, "*.fsn");
 				break;
@@ -140,7 +142,7 @@ void TSK_WriteFile()
 }
 
 //fill buffer, make dirs
-void WriteInit(void)
+int SD_SystemInit(void)
 {
 	FRESULT res;
 	FIL fsrc;       // file objects
@@ -148,69 +150,80 @@ void WriteInit(void)
 
 	memset(&gWritebuf, 0, sizeof(gWritebuf));
 	gWritebuf.wbuf = WriteDataBuf;
-
-
 	f_mount(&fs, "", 0);  // Register a work area to logical drive 0
-
-
-
+	
+	/*缓存将要写的数据*/
 	res = f_open(&fsrc, _T("wdata.fsn"), FA_READ | FA_OPEN_EXISTING);
 	if (res != FR_OK)
 	{
-		printf("open file err, %d\n", res);
+		DBG_print(DBG_ERROR, "open file err, %d", res);
+		goto err1;
 	}
-
-
-
 	res = f_read(&fsrc, gWritebuf.wbuf, fsrc.fsize, &gWritebuf.length);
 	if (res != FR_OK)
 	{
-		printf("read file err, %d\n", res);
+		DBG_print(DBG_ERROR, "read file err, %d", res);
+		goto err1;
 	}
 	gWritebuf.validSign = 1;
-
 	res = f_close(&fsrc);
+	if (res != FR_OK)
+	{
+		DBG_print(DBG_ERROR, "close file err, %d", res);
+		goto err1;
+	}
 
-
-
-
+	/*创建目录结构*/
 	res = f_mkdir(FSN_PATH);
 	if (res != FR_OK && res != FR_EXIST)
 	{
-		printf("mkdir %s err, %d\n", FSN_UNLOAD_PATH, res);
+		DBG_print(DBG_ERROR, "mkdir %s err, %d", FSN_UNLOAD_PATH, res);
+		goto err2;
 	}
-
 	res = f_mkdir(TXT_PATH);
 	if (res != FR_OK && res != FR_EXIST)
 	{
-		printf("mkdir %s err, %d\n", FSN_UNLOAD_PATH, res);
+		DBG_print(DBG_ERROR, "mkdir %s err, %d", FSN_UNLOAD_PATH, res);
+		goto err2;
 	}
-
 	res = f_mkdir(FSN_UNLOAD_PATH);
 	if (res != FR_OK && res != FR_EXIST)
 	{
-		printf("mkdir %s err, %d\n", FSN_UNLOAD_PATH, res);
-
+		DBG_print(DBG_ERROR, "mkdir %s err, %d", FSN_UNLOAD_PATH, res);
+		goto err2;
 	}
 	res = f_mkdir(FSN_LOADED_PATH);
 	if (res != FR_OK && res != FR_EXIST)
 	{
-		printf("mkdir %s err, %d\n", FSN_LOADED_PATH, res);
+		DBG_print(DBG_ERROR, "mkdir %s err, %d", FSN_LOADED_PATH, res);
+		goto err2;
 	}
 	res = f_mkdir(TXT_UNLOAD_PATH);
 	if (res != FR_OK && res != FR_EXIST)
 	{
-		printf("mkdir %s err, %d\n", TXT_UNLOAD_PATH, res);
+		DBG_print(DBG_ERROR, "mkdir %s err, %d", TXT_UNLOAD_PATH, res);
+		goto err2;
 	}
 	res = f_mkdir(TXT_LOADED_PATH);
 	if (res != FR_OK && res != FR_EXIST)
 	{
-		printf("mkdir %s err, %d\n", TXT_LOADED_PATH, res);
+		DBG_print(DBG_ERROR, "mkdir %s err, %d", TXT_LOADED_PATH, res);
+		goto err2;
 	}
+
+	return 0;
+
+err1:
+	DBG_print(DBG_ERROR, "prepare write file buffer err");
+	return 1;
+err2:
+	DBG_print(DBG_ERROR, "make dirs err");
+	return 2;
+	
 }
 
 //get loacal time
-int GetLocalTim(LocalTim * dt)
+int GetLocalDataTime(LocalTim * dt)
 {
 	time_t timer;
 	struct tm *tblock;

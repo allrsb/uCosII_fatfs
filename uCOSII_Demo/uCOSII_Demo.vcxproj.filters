@@ -60,7 +60,7 @@
     <ClCompile Include="writeAndReadCmd.c">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="writeFile.c">
+    <ClCompile Include="SD_work.c">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

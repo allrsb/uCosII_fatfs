@@ -18,7 +18,7 @@
 #define MainTask_Prio 5
 
 
-#define TSK_WriteFile_Prio    10
+#define TSK_SDWork_Prio    10
 #define TSK_ReadFile_Prio     12
 #define TSK_NetSend_Prio      8
 #define TSK_WriteCmd_Prio     9
@@ -33,7 +33,7 @@
 #define MainTask_StkSize 1024
 
 //for test
-#define TSK_WriteFile_StkSize     1024
+#define TSK_SDWork_StkSize     1024
 #define TSK_ReadFile_StkSize      1024
 #define TSK_NetSend_StkSize       1024
 #define TSK_WriteCmd_StkSize      1024

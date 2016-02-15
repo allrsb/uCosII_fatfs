@@ -90,7 +90,7 @@
     <ClCompile Include="option\syscall.c" />
     <ClCompile Include="option\unicode.c" />
     <ClCompile Include="readFile.c" />
-    <ClCompile Include="writeFile.c" />
+    <ClCompile Include="SD_work.c" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\uCOS-II\Other_Headers\includes.h" />
