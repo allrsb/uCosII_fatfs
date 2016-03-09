@@ -56,14 +56,14 @@ extern PARTITION VolToPart[];	/* Volume - Partition resolution table */
 #if !_USE_LFN
 #error _LFN_UNICODE must be 0 at non-LFN cfg.
 #endif
-#ifndef _INC_TCHAR  //tango add 151228
+#ifndef _INC_TCHAR  
 typedef WCHAR TCHAR;
 #define _T(x) L ## x
 #define _TEXT(x) L ## x
 #endif
 
 #else						/* ANSI/OEM string */
-#ifndef _INC_TCHAR   //tango add 151228
+#ifndef _INC_TCHAR   
 typedef char TCHAR;
 #define _T(x) x
 #define _TEXT(x) x

@@ -54,13 +54,13 @@
     <ClCompile Include="option\unicode.c">
       <Filter>源文件\option</Filter>
     </ClCompile>
-    <ClCompile Include="readFile.c">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="writeAndReadCmd.c">
-      <Filter>源文件</Filter>
-    </ClCompile>
     <ClCompile Include="SD_work.c">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="read_file.c">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="write_read_cmd.c">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>
@@ -92,22 +92,22 @@
     <ClInclude Include="integer.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="SystemConfig.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="readFile.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="writeFile.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="writeAndReadCmd.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
     <ClInclude Include="global.h">
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="debug.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="read_file.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="system_config.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="write_read_cmd.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="SD_work.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>

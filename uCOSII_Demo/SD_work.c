@@ -1,9 +1,9 @@
-#include "SystemConfig.h"
+#include "system_config.h"
 #include <stdio.h>
 #include <string.h>
 #include "ff.h"
-#include "writeFile.h"
-#include "writeAndReadCmd.h"
+#include "SD_work.h"
+#include "write_read_cmd.h"
 #include "global.h"
 #include "debug.h"
 
@@ -20,6 +20,7 @@ static int SD_SystemInit(void);
 static int SD_DirInit(void);
 static int GetLocalDataTime(LocalTim *);
 int FindVaildFile(char *dirPath, char * matchFile, char *dstName);
+static int traverse_subcatalog(char *directory_path, sd_file_manage_t * p_sd_file_manage, char *pattern);
 
 FATFS fs;            // Work area (file system object) for logical drive
 char WriteDataBuf[10 * 1024 * 1024];
@@ -30,7 +31,7 @@ char wFsnLoadedDirPath[32] = { 0 };
 char wTxtLoadedDirPath[32] = { 0 };
 
 WriteBuffer gWritebuf;
-
+sd_file_manage_t sd_file_manage;
 
 void TSK_SDWork()
 {
@@ -81,6 +82,7 @@ void TSK_SDWork()
 					DBG_print(DBG_ERROR, "write file err, %d, %d", res, bw);
 				}
 				f_close(&fdst);
+				DBG_print(DBG_INFO, "creat & write file %s", wFilePath);
 
 
 				/*write txt file*/
@@ -153,7 +155,7 @@ int SD_SystemInit(void)
 	f_mount(&fs, "", 0);  // Register a work area to logical drive 0
 	
 	/*缓存将要写的数据*/
-	res = f_open(&fsrc, _T("wdata.fsn"), FA_READ | FA_OPEN_EXISTING);
+	res = f_open(&fsrc, "wdata.fsn", FA_READ | FA_OPEN_EXISTING);
 	if (res != FR_OK)
 	{
 		DBG_print(DBG_ERROR, "open file err, %d", res);
@@ -211,6 +213,9 @@ int SD_SystemInit(void)
 		goto err2;
 	}
 
+	traverse_subcatalog("\\FSN\\UNLOAD", &sd_file_manage, "*");
+//	traverse_subcatalog("\\FSN\\UNLOAD\\20160309", &sd_file_manage, L"*.*");
+
 	return 0;
 
 err1:
@@ -221,6 +226,62 @@ err2:
 	return 2;
 	
 }
+
+
+/*********************************************
+*@brief  在文件夹中遍历子文件夹，返回最后文件夹名字指针
+*@param [in ]  directory_path
+*@param [out]  directory_name
+*@param [in ]  pattern 匹配模式，比如“*.fsn”
+*@return
+**********************************************
+*/
+static char traverse_subcatalog(char *directory_path, char *directory_name, char *pattern)
+{
+	int res;
+	DIR directory_object;
+	FILINFO file_object;
+
+	char tst[12];
+#if _USE_LFN
+	char lfn[_MAX_LFN + 1];
+	file_object.lfname = lfn;
+	file_object.lfsize = _MAX_LFN + 1;
+#endif
+
+	res = f_findfirst(&directory_object, &file_object, directory_path, pattern);
+	while (res == FR_OK && file_object.fname[0])
+	{
+#if _USE_LFN
+		DBG_print(DBG_DEBUG, "%-12s  %s", file_object.fname, file_object.lfname);
+#else
+		
+		DBG_print(DBG_DEBUG, "%s", (file_object.fname));
+		
+#endif
+		res = f_findnext(&directory_object, &file_object);
+	}
+
+	if (0 != file_object.fname[0])   
+		directory_name = file_object.fname;
+
+	return 0;
+}
+
+/*********************************************
+*@brief  在文件夹中遍历子文件夹，返回最后文件夹名字指针
+*@param [in ]  directory_path
+*@param [out]  directory_name
+*@param [in ]  pattern 匹配模式，比如“*.fsn”
+*@return
+**********************************************
+*/
+static char traverse_subfile(char *directory_path, char *directory_name, char *pattern)
+{
+
+}
+
+
 
 //get loacal time
 int GetLocalDataTime(LocalTim * dt)
@@ -259,7 +320,8 @@ int FindVaildFile(char *dirPath, char * matchFile, char *dstName)
 	fno.lfsize = _MAX_LFN + 1;
 #endif
 	res = f_findfirst(&dj, &fno, dirPath, matchFile);
-	if (res == FR_OK && fno.fname[0]){
+	if (res == FR_OK && fno.fname[0])
+	{
 		f_closedir(&dj);
 		strcpy(dstName, fno.fname);
 		return 0;

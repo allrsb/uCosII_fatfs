@@ -55,6 +55,7 @@
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <CompileAs>CompileAsC</CompileAs>
+      <UndefinePreprocessorDefinitions>UNICODE;%(UndefinePreprocessorDefinitions)</UndefinePreprocessorDefinitions>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -86,10 +87,10 @@
     <ClCompile Include="diskio.c" />
     <ClCompile Include="ff.c" />
     <ClCompile Include="main.c" />
-    <ClCompile Include="writeAndReadCmd.c" />
+    <ClCompile Include="write_read_cmd.c" />
     <ClCompile Include="option\syscall.c" />
     <ClCompile Include="option\unicode.c" />
-    <ClCompile Include="readFile.c" />
+    <ClCompile Include="read_file.c" />
     <ClCompile Include="SD_work.c" />
   </ItemGroup>
   <ItemGroup>
@@ -104,10 +105,10 @@
     <ClInclude Include="ffconf.h" />
     <ClInclude Include="global.h" />
     <ClInclude Include="integer.h" />
-    <ClInclude Include="readFile.h" />
-    <ClInclude Include="SystemConfig.h" />
-    <ClInclude Include="writeAndReadCmd.h" />
-    <ClInclude Include="writeFile.h" />
+    <ClInclude Include="read_file.h" />
+    <ClInclude Include="system_config.h" />
+    <ClInclude Include="write_read_cmd.h" />
+    <ClInclude Include="SD_work.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

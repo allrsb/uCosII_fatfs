@@ -10,8 +10,8 @@
 #define DBG_LEVEL_ALL          0x00
 #define DBG_ERROR              0x04      //打印级别
 #define DBG_WARN	           0x03
-#define DBG_INFO               0x02
-#define DBG_DEBUG              0x01
+#define DBG_DEBUG              0x02
+#define DBG_INFO               0x01
 #define DBG_LEVEL_MASK         0xFF      //掩码
 
 #define LOG_WRITE              0x80      //最高位，往SD卡存log标志
