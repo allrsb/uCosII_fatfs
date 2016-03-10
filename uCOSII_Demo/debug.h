@@ -20,7 +20,47 @@
 
 
 
+char _trace(TCHAR *format, ...);
+#define VC   
 
+#ifdef VC     //在VC打印到输出窗口
+
+#if DEBUG_ALL
+
+#define DBG_print(level, format, ...) \
+do{\
+	if ((level & DBG_LEVEL_MASK) >= DBG_MIN_LEVEL)\
+	{\
+		_trace("%s, [%s, %d]:  ", #level, __FUNCTION__, __LINE__); \
+		_trace(format, ##__VA_ARGS__); \
+		_trace("\n"); \
+	}\
+} while (0);
+#else
+#define Debug(level, fmt, args)
+#endif
+
+
+
+/*断言*/
+#if DEBUG_ASSERT
+
+#define DBG_assert(assertion, format, args)\
+	do{\
+	if (!(assertion))\
+	{\
+		_trace("ASSERT, [%s, %d]:  ", __FUNCTION__, __LINE__); \
+		_trace(format, ##args); \
+		_trace("\n"); \
+	    while (1); \
+	}\
+} while (0)
+#else
+#define DBG_assert(assertion, format, args) 
+#endif
+
+
+#else
 
 #if DEBUG_ALL
 
@@ -54,6 +94,8 @@ do{\
 } while (0)
 #else
 #define DBG_assert(assertion, format, args) 
+#endif
+
 
 #endif
 

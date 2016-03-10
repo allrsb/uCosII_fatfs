@@ -84,6 +84,7 @@
     <ClCompile Include="..\uCOS-II\Ports\WIN32\os_cpu_c.c" />
     <ClCompile Include="..\uCOS-II\Ports\WIN32\os_trace.c" />
     <ClCompile Include="..\uCOS-II\Source\ucos_ii.c" />
+    <ClCompile Include="debug.c" />
     <ClCompile Include="diskio.c" />
     <ClCompile Include="ff.c" />
     <ClCompile Include="main.c" />

@@ -18,9 +18,10 @@
 
 static int SD_SystemInit(void);
 static int SD_DirInit(void);
-static int GetLocalDataTime(LocalTim *);
-int FindVaildFile(char *dirPath, char * matchFile, char *dstName);
-static int traverse_subcatalog(char *directory_path, sd_file_manage_t * p_sd_file_manage, char *pattern);
+static int get_local_data_time(LocalTim *);
+int find_one_vaild_file(char *dirPath, char * matchFile, char *dstName);
+static int traverse_subcatalog(char *directory_path, char *directory_name, char *pattern);
+static int traverse_subfile(char *file_path, sd_file_manage_t *p_sd_file_manage, char *pattern);
 
 FATFS fs;            // Work area (file system object) for logical drive
 char WriteDataBuf[10 * 1024 * 1024];
@@ -55,7 +56,7 @@ void TSK_SDWork()
 			switch (*pCmd)
 			{
 			case WRITE_CMD:
-				GetLocalDataTime(&dataTime);
+				get_local_data_time(&dataTime);
 				/*write fsn file*/
 				sprintf(wFsnUnloadDirPath, "FSN/UNLOAD/%04d%02d%02d", dataTime.year, dataTime.mon, dataTime.day);
 				sprintf(wFsnLoadedDirPath, "FSN/LOADED/%04d%02d%02d", dataTime.year, dataTime.mon, dataTime.day);
@@ -122,14 +123,14 @@ void TSK_SDWork()
 					break;
 				}
 
-				FindVaildFile(wFsnUnloadDirPath, L"*.FSN", rdName);
+				find_one_vaild_file(wFsnUnloadDirPath, L"*.FSN", rdName);
 //				sprintf();
 //				res = f_open(&fd, "FSN\\UNLOAD\\154623.FSN", FA_READ | FA_OPEN_EXISTING);
 				if (res != FR_OK)
 				{
 					DBG_print(DBG_ERROR, "open file err, %d", res);
 				}
-				//				FindVaildFile(wFsnUnloadDirPath, "*.fsn");
+				//				find_one_vaild_file(wFsnUnloadDirPath, "*.fsn");
 				break;
 			default:
 				break;
@@ -149,6 +150,8 @@ int SD_SystemInit(void)
 	FRESULT res;
 	FIL fsrc;       // file objects
 	unsigned int br;
+
+	memset(&sd_file_manage, 0, sizeof(sd_file_manage_t));  //初始化全局变量
 
 	memset(&gWritebuf, 0, sizeof(gWritebuf));
 	gWritebuf.wbuf = WriteDataBuf;
@@ -213,7 +216,8 @@ int SD_SystemInit(void)
 		goto err2;
 	}
 
-	traverse_subcatalog("\\FSN\\UNLOAD", &sd_file_manage, "*");
+	directory_init("\\FSN\\UNLOAD", "*.FSN");
+//	traverse_subcatalog("\\FSN\\UNLOAD", &sd_file_manage, "*");
 //	traverse_subcatalog("\\FSN\\UNLOAD\\20160309", &sd_file_manage, L"*.*");
 
 	return 0;
@@ -227,22 +231,41 @@ err2:
 	
 }
 
+/*********************************************
+*@brief  初始化unload文件夹，填充一些需要的管理信息
+*@param [in ]  directory_path eg:FSN/UNLOAD  
+*@param [in ]  pattern 匹配模式，比如“*.fsn”
+*@return
+**********************************************
+*/
+static int directory_init(char *directory_path, char *pattern)
+{
+	char file_path[64];
+	char directory_name[16];
+
+	traverse_subcatalog(directory_path, &directory_name, "*");
+	strcpy(file_path, directory_path);
+	sprintf(file_path, "%s/%s", file_path, directory_name);  //填充文件路径
+
+	traverse_subfile(file_path, &sd_file_manage, pattern);
+
+	return 0;
+}
 
 /*********************************************
 *@brief  在文件夹中遍历子文件夹，返回最后文件夹名字指针
 *@param [in ]  directory_path
 *@param [out]  directory_name
-*@param [in ]  pattern 匹配模式，比如“*.fsn”
+*@param [in ]  pattern 匹配模式
 *@return
 **********************************************
 */
-static char traverse_subcatalog(char *directory_path, char *directory_name, char *pattern)
+static int traverse_subcatalog(char *directory_path, char *directory_name, char *pattern)
 {
 	int res;
 	DIR directory_object;
 	FILINFO file_object;
 
-	char tst[12];
 #if _USE_LFN
 	char lfn[_MAX_LFN + 1];
 	file_object.lfname = lfn;
@@ -257,34 +280,63 @@ static char traverse_subcatalog(char *directory_path, char *directory_name, char
 #else
 		
 		DBG_print(DBG_DEBUG, "%s", (file_object.fname));
-		
 #endif
+		strcpy(directory_name, file_object.fname); //TODO: 要优化效率
 		res = f_findnext(&directory_object, &file_object);
 	}
 
-	if (0 != file_object.fname[0])   
-		directory_name = file_object.fname;
+//	if (0 != file_object.fname[0])
+//	{
+//		strcpy(directory_name, file_object.fname);
+		//directory_name = file_object.fname;
+//	}
+	f_closedir(&directory_object);
 
 	return 0;
 }
 
 /*********************************************
-*@brief  在文件夹中遍历子文件夹，返回最后文件夹名字指针
+*@brief  在文件夹中遍历子文件，记录文件大小信息
 *@param [in ]  directory_path
 *@param [out]  directory_name
 *@param [in ]  pattern 匹配模式，比如“*.fsn”
 *@return
 **********************************************
 */
-static char traverse_subfile(char *directory_path, char *directory_name, char *pattern)
+static int traverse_subfile(char *file_path, sd_file_manage_t *p_sd_file_manage, char *pattern)
 {
+	int res;
+	DIR directory_object;
+	FILINFO file_object;
 
+#if _USE_LFN
+	char lfn[_MAX_LFN + 1];
+	file_object.lfname = lfn;
+	file_object.lfsize = _MAX_LFN + 1;
+#endif
+
+	res = f_findfirst(&directory_object, &file_object, file_path, pattern);
+	while (res == FR_OK && file_object.fname[0])
+	{
+#if _USE_LFN
+		DBG_print(DBG_DEBUG, "%-12s  %s", file_object.fname, file_object.lfname);
+#else
+		DBG_print(DBG_DEBUG, "%s", (file_object.fname));
+		p_sd_file_manage->unload_file_num++;
+		p_sd_file_manage->unload_file_size += file_object.fsize;
+
+#endif
+		res = f_findnext(&directory_object, &file_object);
+	}
+	f_closedir(&directory_object);
+
+	return 0;
 }
 
 
 
 //get loacal time
-int GetLocalDataTime(LocalTim * dt)
+static int get_local_data_time(LocalTim * dt)
 {
 	time_t timer;
 	struct tm *tblock;
@@ -302,14 +354,14 @@ int GetLocalDataTime(LocalTim * dt)
 }
 
 /*get queue such as read or write cmd*/
-int GetQueueCmd(void)
+int get_queue_cmd(void)
 {
 
 	return 0;
 }
 
 /*find a vaild .fsn or .txt file*/
-int FindVaildFile(char *dirPath, char * matchFile, char *dstName)
+int find_one_vaild_file(char *dirPath, char * matchFile, char *dstName)
 {
 	FRESULT res;
 	DIR dj;
@@ -327,17 +379,7 @@ int FindVaildFile(char *dirPath, char * matchFile, char *dstName)
 		return 0;
 	}
 	f_closedir(&dj);
+
 	return 1;
-
-
-	//	while (res == FR_OK && fno.fname[0]) {         /* Repeat while an item is found */
-	//#if _USE_LFN
-	//		printf("%-12s  %s\n", fno.fname, fno.lfname);/* Display the item name */
-	//#else
-	//		printf("%s\n", fno.fname);
-	//#endif
-	//		res = f_findnext(&dj, &fno);               /* Search for next item */
-	//	}
-	//	f_closedir(&dj);
 
 }

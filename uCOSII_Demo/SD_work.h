@@ -23,7 +23,8 @@ typedef struct tag_LocalTim
 //sd卡里文件管理信息
 typedef struct tag_sd_file_manage
 {
-	unsigned int unload_file_size;  //未上传文件大小
+	unsigned int unload_file_num;   //未上传文件个数
+	unsigned int unload_file_size;  //未上传文件大小	
 }sd_file_manage_t;
 
 

@@ -63,6 +63,9 @@
     <ClCompile Include="write_read_cmd.c">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="debug.c">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\uCOS-II\Ports\WIN32\os_cpu.h">
