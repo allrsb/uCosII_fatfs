@@ -52,7 +52,7 @@ void TSK_WriteCmd(void *p_arg)
 		}
 
 		OSTimeDlyHMSM(0, 0, 5, 0); /* 任务调度*/
-		//		OSTaskChangePrio(20, TSK_ReadFile_Prio);
+//      OSTaskChangePrio(20, TSK_ReadFile_Prio);
 	}
 
 }

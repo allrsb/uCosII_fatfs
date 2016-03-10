@@ -18,7 +18,7 @@
 
 static int SD_SystemInit(void);
 static int SD_DirInit(void);
-static int get_local_data_time(LocalTim *);
+static int get_local_data_time(local_time_t *);
 int find_one_vaild_file(char *dirPath, char * matchFile, char *dstName);
 static int traverse_subcatalog(char *directory_path, char *directory_name, char *pattern);
 static int traverse_subfile(char *file_path, sd_file_manage_t *p_sd_file_manage, char *pattern);
@@ -31,7 +31,7 @@ char wTxtUnloadDirPath[32] = { 0 };
 char wFsnLoadedDirPath[32] = { 0 };
 char wTxtLoadedDirPath[32] = { 0 };
 
-WriteBuffer gWritebuf;
+write_buffer_t gWritebuf;
 sd_file_manage_t sd_file_manage;
 
 void TSK_SDWork()
@@ -39,7 +39,7 @@ void TSK_SDWork()
 	FRESULT res;
 	unsigned char err;
 	FIL fsrc, fdst;       // file objects
-	LocalTim dataTime;
+	local_time_t dataTime;
 	int bw = 0;
 	char * pCmd;
 	char rdName[13] = { 0 };
@@ -238,7 +238,7 @@ err2:
 *@return
 **********************************************
 */
-static int directory_init(char *directory_path, char *pattern)
+static int directory_init(char *directory_path, char *pattern) //TODO:初始化策略？
 {
 	char file_path[64];
 	char directory_name[16];
@@ -336,7 +336,7 @@ static int traverse_subfile(char *file_path, sd_file_manage_t *p_sd_file_manage,
 
 
 //get loacal time
-static int get_local_data_time(LocalTim * dt)
+static int get_local_data_time(local_time_t * dt)
 {
 	time_t timer;
 	struct tm *tblock;
@@ -382,4 +382,34 @@ int find_one_vaild_file(char *dirPath, char * matchFile, char *dstName)
 
 	return 1;
 
+}
+
+/*********************************************
+*@brief  在文件夹中遍历子文件，记录文件大小信息
+*@param [in ]  p_sd_message 消息指针
+*@param [in ]  p_sd_msg_array_mng 消息管理指针
+*@return
+**********************************************
+*/
+int sd_assign_work_queue(sd_message_t *p_sd_message, sd_message_array_manage_t *p_sd_msg_array_mng)
+{
+	//未收到新消息，且数组中已无消息。不处理
+	if (NULL == p_sd_message && 0 == p_sd_msg_array_mng->count)  
+	{
+		return 0;
+	}
+
+	//未收到新消息，且本轮操作完毕，会从数组中取消息
+	if (NULL == p_sd_message && SD_DISK_WORK_END == p_sd_msg_array_mng->count)
+	{
+
+	}
+
+	//新消息，根据优先级决定是立即执行或压栈
+	if (NULL != p_sd_message)
+	{
+
+	}
+
+	
 }
