@@ -30,13 +30,13 @@
 *********************************************************************************************************
 */
 
-#define MainTask_StkSize 1024
+#define MainTask_StkSize 102400
 
 //for test
-#define TSK_SDWork_StkSize     1024
-#define TSK_ReadFile_StkSize      1024
-#define TSK_NetSend_StkSize       1024
-#define TSK_WriteCmd_StkSize      1024
+#define TSK_SDWork_StkSize        102400
+#define TSK_ReadFile_StkSize      102400
+#define TSK_NetSend_StkSize       102400
+#define TSK_WriteCmd_StkSize      102400
 
 
 #define OS_TASK_TMR_PRIO 65533

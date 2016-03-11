@@ -42,18 +42,20 @@ void TSK_SDWork()
 	local_time_t dataTime;
 	int bw = 0;
 	char * pCmd;
+	sd_message_t *p_sd_message_accept;
 	char rdName[13] = { 0 };
 
 	SD_SystemInit();
 
 	while (1)
 	{
-		pCmd = OSQPend(Q_Msg, 0, &err);
-		DBG_print(DBG_INFO, "que cmd = %d", *pCmd);
+		p_sd_message_accept = OSQPend(Q_Msg, 0, &err);
+		DBG_print(DBG_INFO, "que cmd = %d", p_sd_message_accept->type);
+		p_sd_message_accept->valid_sign = 0;
 
 		while (1)
 		{
-			switch (*pCmd)
+			switch (p_sd_message_accept->type)
 			{
 			case WRITE_CMD:
 				get_local_data_time(&dataTime);
