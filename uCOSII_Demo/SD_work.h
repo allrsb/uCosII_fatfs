@@ -54,16 +54,18 @@ typedef struct tag_local_time
 //sd卡里文件管理信息
 typedef struct tag_sd_file_manage
 {
-	unsigned int unload_file_num;   //未上传文件个数
-	unsigned int unload_file_size;  //未上传文件大小	
+	unsigned int unload_file_num;       //未上传文件个数
+	unsigned int not_updata_file_num;   //未更新文件个数
+	unsigned int unload_file_size;      //未上传文件大小	
+	unsigned int not_updata_file_size;  //未更新文件个数
 }sd_file_manage_t;
 
 //消息队列结构体
 typedef struct tag_sd_message
 {
-	char type;  //消息类型；eg.read write
+	char type;               //消息类型；eg.read write
 	unsigned char priority;  //优先级
-	unsigned char step;  //消息执行步骤
+	unsigned char step;      //消息执行步骤
 	char valid_sign;
 }sd_message_t;
 

@@ -51,7 +51,7 @@ void TSK_SDWork()
 	{
 		p_sd_message_accept = OSQPend(Q_Msg, 0, &err);
 		DBG_print(DBG_INFO, "que cmd = %d", p_sd_message_accept->type);
-		p_sd_message_accept->valid_sign = 0;
+		p_sd_message_accept->valid_sign = 0;  //TODO:不应该放在这里
 
 		while (1)
 		{
@@ -219,8 +219,6 @@ int SD_SystemInit(void)
 	}
 
 	directory_init("\\FSN\\UNLOAD", "*.FSN");
-//	traverse_subcatalog("\\FSN\\UNLOAD", &sd_file_manage, "*");
-//	traverse_subcatalog("\\FSN\\UNLOAD\\20160309", &sd_file_manage, L"*.*");
 
 	return 0;
 
@@ -242,14 +240,15 @@ err2:
 */
 static int directory_init(char *directory_path, char *pattern) //TODO:初始化策略？
 {
-	char file_path[64];
-	char directory_name[16];
+	char file_path[64] = {0};
+	char directory_name[64] = {0};
 
 	traverse_subcatalog(directory_path, &directory_name, "*");
 	strcpy(file_path, directory_path);
 	sprintf(file_path, "%s/%s", file_path, directory_name);  //填充文件路径
 
-	traverse_subfile(file_path, &sd_file_manage, pattern);
+	if (directory_name[0] != 0)  //修空卡无子目录，出错的bug
+		traverse_subfile(file_path, &sd_file_manage, pattern);
 
 	return 0;
 }
@@ -325,7 +324,9 @@ static int traverse_subfile(char *file_path, sd_file_manage_t *p_sd_file_manage,
 #else
 		DBG_print(DBG_DEBUG, "%s", (file_object.fname));
 		p_sd_file_manage->unload_file_num++;
+		p_sd_file_manage->not_updata_file_num++;
 		p_sd_file_manage->unload_file_size += file_object.fsize;
+		p_sd_file_manage->not_updata_file_size += file_object.fsize;
 
 #endif
 		res = f_findnext(&directory_object, &file_object);
@@ -414,4 +415,30 @@ int sd_assign_work_queue(sd_message_t *p_sd_message, sd_message_array_manage_t *
 	}
 
 	
+}
+
+//更新文件，具体操作是把文件从未上传剪切到已上传
+int sd_updata_unload_file(char *file_path, char *new_name)
+{
+	FRESULT res;
+	DIR directory_object;
+	FILINFO file_object;
+	char old_name[64];
+
+	if (sd_file_manage.not_updata_file_num == sd_file_manage.unload_file_num)
+	{
+		DBG_print(DBG_INFO, "未上传文件数量等于未更新文件数量，不更新");
+		return 1;
+	}
+	if (sd_file_manage.not_updata_file_num > sd_file_manage.unload_file_num)
+	{
+		DBG_print(DBG_ERROR, "未上传文件数量小于未更新文件数量，错误");
+		return 2;
+	}
+	
+	res = f_findfirst(&directory_object, &file_object, file_path, "*");
+	
+	f_rename(old_name, new_name);
+	sd_file_manage.unload_file_num--;
+
 }
